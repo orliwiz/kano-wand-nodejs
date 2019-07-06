@@ -1,5 +1,5 @@
-var noble = require('noble-mac');
-const KanoWand = require('kano-wand')
+var noble = require('noble');
+const KanoWand = require('./index')
 
 var wand = new KanoWand();
 

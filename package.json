@@ -25,6 +25,7 @@
     "@tensorflow/tfjs-node": "^0.2.1",
     "async": "^2.6.1",
     "fit-curve": "^0.1.6",
+    "noble": "^1.9.1",
     "rxjs": "^6.3.3",
     "string-just": "0.0.2"
   }
