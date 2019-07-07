@@ -43,26 +43,24 @@ class Wand {
     processCharacteristic(characteristic) {
         {
             if (compareUUID(characteristic.uuid, kano.SENSOR.QUATERNIONS_CHAR)) {
-                console.log("found position");
+                console.log("Found position characteristic");
                 this.quaternionsCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.IO.USER_BUTTON_CHAR)) {
-                console.log("found Button");
+                console.log("Found button characteristic");
                 this.buttonCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.SENSOR.QUATERNIONS_RESET_CHAR)) {
-                console.log("found ResetChar");
+                console.log("Found ResetChar characteristic");
                 this.quaternionsResetCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.IO.VIBRATOR_CHAR)) {
-                console.log("found vibrate");
+                console.log("Found vibrate characteristic");
                 this.vibrateCharacteristic = characteristic;
-                
             }
-
         }
     }
 
@@ -74,18 +72,21 @@ class Wand {
 
     init(peripheral) {
         console.log("init");
-        var serviceUUIDs = [kano.SENSOR.SERVICE, kano.IO.SERVICE, kano.INFO.SERVICE];
+        var serviceUUIDs = [kano.SENSOR.SERVICE.replace(/-/g, "").toLowerCase(), kano.IO.SERVICE.replace(/-/g, "").toLowerCase(), kano.INFO.SERVICE.replace(/-/g, "").toLowerCase()];
 
         const $this = this;
         return new Promise((resolve, reject) => {
             async.waterfall([
                 function(callback) {
+                    console.log("Discovering services...");
                     peripheral.discoverServices(serviceUUIDs, callback);
                 },
                 function(services, callback) {
+                    console.log("Found", services.length, "services");
                     var tasks = []
                     services.forEach(function(service) {
                         tasks.push(function(callback) {
+                            console.log("Discovering characteristics for service with UUID", service.uuid);
                             service.discoverCharacteristics([], callback);
                         })
                     })
@@ -108,7 +109,7 @@ class Wand {
     }
 
     subscribe_button(result, callback) {
-        console.log("Subscribe to Button")
+        console.log("Subscribe to button characteristic")
         this.buttonCharacteristic.on('read', this.onButtonUpdate.bind(this));
         this.buttonCharacteristic.subscribe(callback);
     }
@@ -160,7 +161,7 @@ class Wand {
     }
 
     subscribe_position(result, callback) {
-        console.log("Subscribe to Motion")
+        console.log("Subscribe to motion characteristic")
         this.quaternionsCharacteristic.on('read', this.onMotionUpdate.bind(this));
         this.quaternionsCharacteristic.subscribe(callback);
     }
@@ -193,8 +194,8 @@ class Wand {
 }
 
 function compareUUID(val1, val2) {
-    val1 = val1.replaceAll("-", "").toLowerCase();
-    val2 = val2.replaceAll("-", "").toLowerCase();
+    val1 = val1.replace(/-/g, "").toLowerCase();
+    val2 = val2.replace(/-/g, "").toLowerCase();
 
     return val1 === val2;
 };
