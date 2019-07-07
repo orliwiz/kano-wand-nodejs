@@ -186,7 +186,7 @@ class Wand {
     }
 
     reset_position() {
-        console.log("Reset Positoin");
+        console.log("Reset position");
         var reset = Buffer.alloc(1);
         reset.writeUInt8(1,0)
         this.quaternionsResetCharacteristic.write(reset, true);
