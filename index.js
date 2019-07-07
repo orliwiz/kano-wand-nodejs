@@ -16,6 +16,7 @@ var gr = new gestureSpells()
 class Wand {
     
     constructor() {
+        this.name = null;
         this.buttonCharacteristic = null;
         this.vibrateCharacteristic = null;
         this.quaternionsCharacteristic = null;
@@ -43,22 +44,22 @@ class Wand {
     processCharacteristic(characteristic) {
         {
             if (compareUUID(characteristic.uuid, kano.SENSOR.QUATERNIONS_CHAR)) {
-                console.log("Found position characteristic");
+                this.logWithName("Found position characteristic");
                 this.quaternionsCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.IO.USER_BUTTON_CHAR)) {
-                console.log("Found button characteristic");
+                this.logWithName("Found button characteristic");
                 this.buttonCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.SENSOR.QUATERNIONS_RESET_CHAR)) {
-                console.log("Found ResetChar characteristic");
+                this.logWithName("Found ResetChar characteristic");
                 this.quaternionsResetCharacteristic = characteristic;
             }
 
             if (compareUUID(characteristic.uuid, kano.IO.VIBRATOR_CHAR)) {
-                console.log("Found vibrate characteristic");
+                this.logWithName("Found vibrate characteristic");
                 this.vibrateCharacteristic = characteristic;
             }
         }
@@ -70,29 +71,30 @@ class Wand {
         this.vibrateCharacteristic.write(vibrate, true);
     }
 
-    init(peripheral) {
-        console.log("init");
+    init(peripheral, name) {
+        this.name = name || peripheral.advertisement.localName;
+        this.logWithName("init");
         var serviceUUIDs = [kano.SENSOR.SERVICE.replace(/-/g, "").toLowerCase(), kano.IO.SERVICE.replace(/-/g, "").toLowerCase(), kano.INFO.SERVICE.replace(/-/g, "").toLowerCase()];
 
         const $this = this;
         return new Promise((resolve, reject) => {
             async.waterfall([
                 function(callback) {
-                    console.log("Discovering services...");
+                    this.logWithName("Discovering services...");
                     peripheral.discoverServices(serviceUUIDs, callback);
-                },
+                }.bind(this),
                 function(services, callback) {
-                    console.log("Found", services.length, "services");
+                    this.logWithName("Found", services.length, "services");
                     var tasks = []
                     services.forEach(function(service) {
                         tasks.push(function(callback) {
-                            console.log("Discovering characteristics for service with UUID", service.uuid);
+                            this.logWithName("Discovering characteristics for service with UUID", service.uuid);
                             service.discoverCharacteristics([], callback);
-                        })
-                    })
+                        }.bind(this))
+                    }.bind(this))
     
                     async.parallel(tasks, callback);
-                },
+                }.bind(this),
                 function (characteristics, callback) {
                     characteristics = characteristics.flat();
                     characteristics.forEach(this.processCharacteristic, this)
@@ -102,14 +104,14 @@ class Wand {
                 this.subscribe_button.bind(this),
                 this.reset_position.bind(this)
             ], function (err, result) {
-                console.log("Wand ready!");
+                this.logWithName("Wand ready!");
                 resolve(true);
-            });
+            }.bind(this));
         });
     }
 
     subscribe_button(callback) {
-        console.log("Subscribe to button characteristic")
+        this.logWithName("Subscribe to button characteristic")
         this.buttonCharacteristic.on('read', this.onButtonUpdate.bind(this));
         this.buttonCharacteristic.subscribe(callback);
     }
@@ -161,7 +163,7 @@ class Wand {
     }
 
     subscribe_position(callback) {
-        console.log("Subscribe to motion characteristic")
+        this.logWithName("Subscribe to motion characteristic")
         this.quaternionsCharacteristic.on('read', this.onMotionUpdate.bind(this));
         this.quaternionsCharacteristic.subscribe(callback);
     }
@@ -177,8 +179,8 @@ class Wand {
         let pitch = `Pitch: ${just.ljust(z.toString(), 16, " ")}`;
         let roll = `Roll: ${just.ljust(w.toString(), 16, " ")}`;
     
-        // console.log(`${pitch}${roll}(x, y): (${x.toString()}, ${y.toString()})`)
-        // console.log(this.getXY(x, y))
+        // this.logWithName(`${pitch}${roll}(x, y): (${x.toString()}, ${y.toString()})`)
+        // this.logWithName(this.getXY(x, y))
         if (this.buttonPressed) {
             this.currentSpell.push([pos.x, pos.y]);
             this.positions.next([pos.x, pos.y]);
@@ -186,7 +188,7 @@ class Wand {
     }
 
     reset_position(callback) {
-        console.log("Reset position");
+        this.logWithName("Reset position");
         var reset = Buffer.alloc(1);
         reset.writeUInt8(1,0)
         this.quaternionsResetCharacteristic.write(reset, true);
@@ -194,6 +196,11 @@ class Wand {
         if (typeof(callback) == typeof(Function)) {
             callback();
         }
+    }
+
+    logWithName(args) {
+        let logs = ["[" + this.name + "]"].concat(args);
+        console.log(logs);
     }
 }
 
