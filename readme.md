@@ -4,7 +4,7 @@ not 100% on replicability of below, will test again to see exactly how it works 
 
     1. Flash pi w/ ssh and wifi info
     2. add pi to vscode ssh
-    3. clone grpc directory to local
+    3. clone to local
     4. install nvm
     5. npm rebuild @tensorflow/tfjs-node --build-from-source
     6. npm install
