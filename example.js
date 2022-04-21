@@ -29,6 +29,9 @@ noble.on('stateChange', function(state) {
 
 wand.spells.subscribe((spell) => {
     console.log(spell);
+    if (spell.spell === 'Lumos') {
+      console.log('light that shit up'); // replace w/ code duh
+    }
 });
 
 process.stdin.on('keypress', (str, key) => {
