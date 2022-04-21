@@ -1,6 +1,5 @@
 var fitCurve = require('fit-curve')
-const tf = require('@tensorflow/tfjs');
-require('@tensorflow/tfjs-node');
+const tf = require('@tensorflow/tfjs-node');
 
 if (!Array.prototype.flat) {
   Array.prototype.flat = function() {
@@ -29,7 +28,7 @@ if (!Array.prototype.flat) {
         this.resolution = 27;
     }
     loadModel(load) {
-        this.loaded = tf.loadModel('file://' + require.resolve('kano-wand/model/spelling.json'));
+        this.loaded = tf.loadLayersModel('https://raw.githubusercontent.com/orliwiz/kano-wand-nodejs/grpc/model/spelling.json');
     }
     predict(spellToRecognise) {
         const spellSize = 80;
