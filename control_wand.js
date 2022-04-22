@@ -58,16 +58,14 @@ button.watch((err, value) => {
             stdio: "inherit"
         });
     });
+    button.unexport();
     process.exit();
 }, 5000);
 });
 
-process.stdin.on('keypress', (str, key) => {
-    if (key.ctrl && key.name === 'c') {
-      //this is not working as expected, if i run twice and press the button it attempts to kill two processes
-      button.unexport();
-      process.exit();
-    } else {
-      wand.reset_position();
-    }
-  });
+process.on('SIGINT', () => {
+  // ctrl-c catches sigint process everytime until i restart app with the button, after that ctrl-c doesn't exit the process
+  console.log('sigint process caught');
+  button.unexport();
+  process.exit();
+});
