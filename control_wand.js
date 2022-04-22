@@ -64,6 +64,7 @@ button.watch((err, value) => {
 
 process.stdin.on('keypress', (str, key) => {
     if (key.ctrl && key.name === 'c') {
+      //this is not working as expected, if i run twice and press the button it attempts to kill two processes
       button.unexport();
       process.exit();
     } else {
