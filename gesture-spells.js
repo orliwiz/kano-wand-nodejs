@@ -28,7 +28,7 @@ if (!Array.prototype.flat) {
         this.resolution = 27;
     }
     loadModel(load) {
-        this.loaded = tf.loadLayersModel('https://raw.githubusercontent.com/orliwiz/kano-wand-nodejs/grpc/model/spelling.json');
+        this.loaded = tf.loadLayersModel('https://raw.githubusercontent.com/orliwiz/kano-wand-nodejs/master/model/spelling.json');
     }
     predict(spellToRecognise) {
         const spellSize = 80;

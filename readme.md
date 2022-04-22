@@ -13,3 +13,7 @@ not 100% on replicability of below, will test again to see exactly how it works 
 
 https://github.com/tensorflow/tfjs/issues/5937 – current issue is that tfjs-node doesn’t work on arm-64 so i'm on the 32 bit version, thus step 5
 https://github.com/mvp/uhubctl/blob/master/README.md#raspberry-pi-4b - control usb hub power, install and permission steps there
+https://javascript.plainenglish.io/how-to-execute-commands-in-node-js-46d8d982fe2a - for child process help
+
+https://github.com/fivdi/onoff#debouncing-buttons - for button
+https://thekenyandev.com/blog/how-to-restart-a-node-js-app-programmatically/ - for restarting the process on button press
