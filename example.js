@@ -1,11 +1,12 @@
 var noble = require('@abandonware/noble');
-const KanoWand = require('./index')
+const KanoWand = require('./index');
+const { exec } = require('child_process');
 
 var wand = new KanoWand();
 
 noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
-      noble.startScanning();
+      noble.startScanning(); // deprecated? also, after wand disconnects program needs to be killed to work. attempt to fix this later
     } else {
       noble.stopScanning();
     }
@@ -30,7 +31,13 @@ noble.on('stateChange', function(state) {
 wand.spells.subscribe((spell) => {
     console.log(spell);
     if (spell.spell === 'Lumos') {
-      console.log('light that shit up'); // replace w/ code duh
+      exec('uhubctl -l 1-1 -a toggle', (err, stdout, sterr) => {
+        if (err) {
+          console.error(`exec error: ${err}`);
+          return;
+        }
+        console.log(`stdout is -> ${stdout}`);
+      });
     }
 });
 
