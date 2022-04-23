@@ -1,10 +1,19 @@
 var noble = require('@abandonware/noble');
 const KanoWand = require('./index');
 const { exec } = require('child_process');
+const { getHarmonyClient } = require('@harmonyhub/client');
 const Gpio = require('onoff').Gpio;
 const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
+const Explorer = require('@harmonyhub/discover').Explorer;
+const discover = new Explorer(5222);
 
 var wand = new KanoWand();
+
+discover.start();
+
+discover.on('online', function(hub) {
+	console.log('discovered ' + hub.ip);
+});
 
 noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
