@@ -1,24 +1,39 @@
 import noble from '@abandonware/noble';
 import KanoWand from './index.js';
 import { exec } from 'child_process';
+import { getHarmonyClient } from '@harmonyhub/client-ws';
+// import pkg from '@harmonyhub/discover';
+// const { Explorer, HubData } = pkg; // read this later https://simonplend.com/node-js-now-supports-named-imports-from-commonjs-modules-but-what-does-that-mean/
 // import Gpio from 'onoff';
 
 // const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
 
 var wand = new KanoWand();
 
-noble.on('stateChange', function(state) {
+async function run() {
+  const harmony = await getHarmonyClient('192.168.254.124'),
+    isOff = await harmony.isOff();
+    console.log(`connected and isOff is ${isOff}`);
+    if (isOff) {
+        console.log('tv is off');
+    }
+    const activities = await harmony.getActivities();
+    console.log(`activity [0] is ${JSON.stringify(activities[0], null, 2)}`);
+    harmony.end();
+}
+
+await noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
-      noble.startScanning(); // deprecated?
+      noble.startScanningAsync();
     } else {
-      noble.stopScanning();
+      noble.stopScanningAsync();
     }
   });
   
-  noble.on('discover', function(peripheral) {
+await  noble.on('discover', function(peripheral) {
       let deviceName = peripheral.advertisement.localName || "";
       if (deviceName.startsWith("Kano-Wand")) {
-        noble.stopScanning();
+        noble.stopScanningAsync();
         console.log("foundWand");
         
         peripheral.connect(function(error) {
@@ -44,6 +59,10 @@ wand.spells.subscribe((spell) => {
       });
     }
 });
+
+run().catch(
+    (err) => console.error(err)
+);
 
 //if button is pressed, wait and restart process
 // button.watch((err, value) => {
