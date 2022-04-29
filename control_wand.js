@@ -1,19 +1,11 @@
-var noble = require('@abandonware/noble');
-const KanoWand = require('./index');
-const { exec } = require('child_process');
-const { getHarmonyClient } = require('@harmonyhub/client');
-const Gpio = require('onoff').Gpio;
-const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
-const Explorer = require('@harmonyhub/discover').Explorer;
-const discover = new Explorer(5222);
+import noble from '@abandonware/noble';
+import KanoWand from './index.js';
+import { exec } from 'child_process';
+// import Gpio from 'onoff';
+
+// const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
 
 var wand = new KanoWand();
-
-discover.start();
-
-discover.on('online', function(hub) {
-	console.log('discovered ' + hub.ip);
-});
 
 noble.on('stateChange', function(state) {
     if (state === 'poweredOn') {
@@ -54,27 +46,27 @@ wand.spells.subscribe((spell) => {
 });
 
 //if button is pressed, wait and restart process
-button.watch((err, value) => {
-  if (err) {
-    throw err;
-  }
-  console.log(`button was pressed! value is ${value}, current process id is ${process.pid}`);
-  setTimeout(function () {
-    process.on("exit", function () {
-        require("child_process").spawn(process.argv.shift(), process.argv, {
-            cwd: process.cwd(),
-            detached : true,
-            stdio: "inherit"
-        });
-    });
-    button.unexport();
-    process.exit();
-}, 5000);
-});
+// button.watch((err, value) => {
+//   if (err) {
+//     throw err;
+//   }
+//   console.log(`button was pressed! value is ${value}, current process id is ${process.pid}`);
+//   setTimeout(function () {
+//     process.on("exit", function () {
+//         require("child_process").spawn(process.argv.shift(), process.argv, {
+//             cwd: process.cwd(),
+//             detached : true,
+//             stdio: "inherit"
+//         });
+//     });
+//     button.unexport();
+//     process.exit();
+// }, 5000);
+// });
 
 process.on('SIGINT', () => {
   // ctrl-c catches sigint process everytime until i restart app with the button, after that ctrl-c doesn't exit the process
   console.log('sigint process caught');
-  button.unexport();
+  //button.unexport();
   process.exit();
 });

@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/megabytemb/kano-wand-nodejs.git"
@@ -14,16 +15,16 @@
     "kano",
     "wand"
   ],
-  "author": "Michael Benz",
+  "author": "orliwiz",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/megabytemb/kano-wand-nodejs/issues"
+    "url": "https://github.com/orliwiz/kano-wand-nodejs/issues"
   },
-  "homepage": "https://github.com/megabytemb/kano-wand-nodejs#readme",
+  "homepage": "https://github.com/orliwiz/kano-wand-nodejs#readme",
   "dependencies": {
     "@abandonware/noble": "^1.9.2-15",
     "@grpc/grpc-js": "^1.6.7",
-    "@harmonyhub/client": "^1.0.9",
+    "@harmonyhub/client-ws": "^1.0.9",
     "@harmonyhub/discover": "^1.0.9",
     "@tensorflow/tfjs-node": "^3.16.0",
     "async": "^2.6.1",

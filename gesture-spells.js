@@ -1,5 +1,5 @@
-var fitCurve = require('fit-curve')
-const tf = require('@tensorflow/tfjs-node');
+import fitCurve from 'fit-curve';
+import tf from'@tensorflow/tfjs-node';
 
 if (!Array.prototype.flat) {
   Array.prototype.flat = function() {
@@ -118,4 +118,4 @@ if (!Array.prototype.flat) {
     }
 }
 
-module.exports = GestureSpells;
+export default GestureSpells;

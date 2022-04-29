@@ -1,10 +1,12 @@
-var just = require('string-just');
-var kano = require('./kano_info.json');
-var async = require("async");
-var gestureSpells = require("./gesture-spells");
-const { Observable, Subject, ReplaySubject, from, of, range } = require('rxjs');
-const { map, filter, switchMap } = require('rxjs/operators');
-const Conv = require('./conversion');
+import just from 'string-just';
+import kano from './kano_info.json' assert {type: "json"};
+import async from 'async';
+import gestureSpells from './gesture-spells.js';
+import { Observable, Subject, ReplaySubject, from, of, range } from 'rxjs';
+// import { map } from 'rxjs/operators/map.js';
+// import { filter } from 'rxjs/operators/filter.js';
+// import { switchMap } from 'rxjs/operators/switchMap.js';
+import Conv from './conversion.js';
 
 const width = 800;
 const height = 600
@@ -13,7 +15,7 @@ const conv = new Conv(width, height);
 var gr = new gestureSpells()
 
 
-class Wand {
+export default class KanoWand {
     
     constructor() {
         this.name = null;
@@ -142,7 +144,7 @@ class Wand {
             let flippedPositions = [];
 
             this.currentSpell.forEach((entry) => {
-                flippedPositions.push(Wand.flipCord(entry));
+                flippedPositions.push(KanoWand.flipCord(entry));
             })
 
             const positions = this.currentSpell;
@@ -210,5 +212,3 @@ function compareUUID(val1, val2) {
 
     return val1 === val2;
 };
-
-module.exports = Wand;

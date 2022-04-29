@@ -1,6 +1,6 @@
 /* global event */
 /* eslint no-restricted-globals: ["error"] */
-module.exports = class WandConversion {
+export default class WandConversion {
     constructor(x, y) {
         this.canvas = {
             x,
