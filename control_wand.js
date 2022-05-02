@@ -2,44 +2,81 @@ import noble from '@abandonware/noble';
 import KanoWand from './index.js';
 import { exec } from 'child_process';
 import { getHarmonyClient } from '@harmonyhub/client-ws';
+import * as readline from 'readline';
 // import pkg from '@harmonyhub/discover';
 // const { Explorer, HubData } = pkg; // read this later https://simonplend.com/node-js-now-supports-named-imports-from-commonjs-modules-but-what-does-that-mean/
 // import Gpio from 'onoff';
 
 // const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
 
-var wand = new KanoWand();
+let wand = new KanoWand();
+let periph;
 
-async function run() {
+readline.emitKeypressEvents(process.stdin);
+
+process.stdin.on('keypress', (ch, key) => {
+  if (key && key.ctrl && key.name === 'c') {
+    console.log('sigint process caught');
+    //button.unexport();
+    process.exit();
+  } else if (key && key.name === 'w') {
+    if (wand.name) {
+      console.log(`wand properties are ${Object.getOwnPropertyNames(wand)}`);
+      wand.vibrate(1);
+    } else {
+      console.log('wand never set')
+    }
+  } else if (key && key.name === 'r') {
+    if (periph) {
+      console.log('attempting reconnect');
+      periph.connect(function(error) {
+        wand.init(periph)
+        .then(()=> {
+            wand.vibrate(1);
+        });
+    });
+    } else {
+      console.log('do not attempt reset, wand never connected');
+    }
+  }
+});
+
+// currently below starts or stops the tv once per process run, this is temporary to ensure communication is working
+async function toggleTV() {
   const harmony = await getHarmonyClient('192.168.254.124'),
     isOff = await harmony.isOff();
     console.log(`connected and isOff is ${isOff}`);
+    const activities = await harmony.getActivities(),
+    activity = activities[0];
+    console.log(`activity [0] is ${JSON.stringify(activity, null, 2)}`);
     if (isOff) {
-        console.log('tv is off');
+        console.log('tv is off, attempting to turn on');
+        if (activity) {
+            await harmony.startActivity(activity.id);
+        }
+    } else {
+        console.log('tv is on, turning off');
+        await harmony.turnOff();
     }
-    const activities = await harmony.getActivities();
-    console.log(`activity [0] is ${JSON.stringify(activities[0], null, 2)}`);
     harmony.end();
 }
 
-await noble.on('stateChange', function(state) {
+noble.on('stateChange', async (state) => {
     if (state === 'poweredOn') {
       noble.startScanningAsync();
-    } else {
-      noble.stopScanningAsync();
-    }
-  });
+  }
+});
   
 await  noble.on('discover', function(peripheral) {
       let deviceName = peripheral.advertisement.localName || "";
       if (deviceName.startsWith("Kano-Wand")) {
         noble.stopScanningAsync();
-        console.log("foundWand");
-        
+        noble.reset();
         peripheral.connect(function(error) {
             wand.init(peripheral)
             .then(()=> {
                 wand.vibrate(1);
+                periph = peripheral;
             });
         });
       }
@@ -60,9 +97,9 @@ wand.spells.subscribe((spell) => {
     }
 });
 
-run().catch(
-    (err) => console.error(err)
-);
+// toggleTV().catch(
+//     (err) => console.error(err)
+// );
 
 //if button is pressed, wait and restart process
 // button.watch((err, value) => {
@@ -83,9 +120,11 @@ run().catch(
 // }, 5000);
 // });
 
-process.on('SIGINT', () => {
-  // ctrl-c catches sigint process everytime until i restart app with the button, after that ctrl-c doesn't exit the process
-  console.log('sigint process caught');
-  //button.unexport();
-  process.exit();
-});
+process.stdin.setRawMode(true);
+
+// process.on('SIGINT', () => {
+//   // ctrl-c catches sigint process everytime until i restart app with the button, after that ctrl-c doesn't exit the process
+//   console.log('sigint process caught');
+
+//   process.exit();
+// });
