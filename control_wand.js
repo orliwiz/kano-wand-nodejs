@@ -20,10 +20,27 @@ let client = connect({
   password: config.PASSWORD
 });
 
+function connectWand(p) {
+  console.log('attempting connect');
+  p.connect((err) => {
+    if (err) {
+      console.error(`exec error: ${err}, if already connected wand will vibrate and not attempt reconnect`);
+      wand.vibrate(1);
+      client.publish('ack_reset', 'not_needed');
+      return;
+    }
+    wand.init(p)
+    .then(()=> {
+        wand.vibrate(1);
+        client.publish('ack_reset', 'reset');
+    });
+});
+}
+
 client.on('connect', function () {
   client.subscribe('wand', err => {
     if (!err) {
-      client.publish('presence', 'Hello mqtt')
+      client.publish('presence', 'Hello mqtt');
       console.log('subscribed to wand succesfully');
     }
   })
@@ -32,19 +49,11 @@ client.on('connect', function () {
 client.on('message', (topic, message) => {
   if (topic === 'wand') {
     if (message.toString() === 'reset') {
-      // break the below out into a function where you pass in the peripheral as my code is using different vairiables for this depending on where
       if (periph) {
-        console.log('attempting reconnect');
-        periph.connect(function(error) {
-          wand.init(periph)
-          .then(()=> {
-              wand.vibrate(1);
-          });
-      });
+        connectWand(periph);
       } else {
         console.log('do not attempt reset, wand never connected');
       }
-
     }
   }
 });
@@ -65,13 +74,7 @@ process.stdin.on('keypress', (ch, key) => {
     }
   } else if (key && key.name === 'r') {
     if (periph) {
-      console.log('attempting reconnect');
-      periph.connect(function(error) {
-        wand.init(periph)
-        .then(()=> {
-            wand.vibrate(1);
-        });
-    });
+      connectWand(periph);
     } else {
       console.log('do not attempt reset, wand never connected');
     }
@@ -109,13 +112,8 @@ await  noble.on('discover', function(peripheral) {
       if (deviceName.startsWith("Kano-Wand")) {
         noble.stopScanningAsync();
         noble.reset();
-        peripheral.connect(function(error) {
-            wand.init(peripheral)
-            .then(()=> {
-                wand.vibrate(1);
-                periph = peripheral;
-            });
-        });
+        connectWand(peripheral);
+        periph = peripheral;
       }
 
   });
