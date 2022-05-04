@@ -29,6 +29,7 @@
     "@tensorflow/tfjs-node": "^3.16.0",
     "async": "^2.6.1",
     "fit-curve": "^0.1.6",
+    "mqtt": "^4.3.7",
     "onoff": "^6.0.3",
     "rxjs": "^6.3.3",
     "string-just": "0.0.2"

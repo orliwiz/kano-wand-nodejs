@@ -2,7 +2,9 @@ import noble from '@abandonware/noble';
 import KanoWand from './index.js';
 import { exec } from 'child_process';
 import { getHarmonyClient } from '@harmonyhub/client-ws';
-import * as readline from 'readline';
+import { emitKeypressEvents } from 'readline';
+import { connect } from 'mqtt';
+import config from './config.js'
 // import pkg from '@harmonyhub/discover';
 // const { Explorer, HubData } = pkg; // read this later https://simonplend.com/node-js-now-supports-named-imports-from-commonjs-modules-but-what-does-that-mean/
 // import Gpio from 'onoff';
@@ -11,8 +13,43 @@ import * as readline from 'readline';
 
 let wand = new KanoWand();
 let periph;
+let client = connect({
+  host: '192.168.254.123',
+  port: 1883,
+  username: 'apartment_broker',
+  password: config.PASSWORD
+});
 
-readline.emitKeypressEvents(process.stdin);
+client.on('connect', function () {
+  client.subscribe('wand', err => {
+    if (!err) {
+      client.publish('presence', 'Hello mqtt')
+      console.log('subscribed to wand succesfully');
+    }
+  })
+});
+
+client.on('message', (topic, message) => {
+  if (topic === 'wand') {
+    if (message.toString() === 'reset') {
+      // break the below out into a function where you pass in the peripheral as my code is using different vairiables for this depending on where
+      if (periph) {
+        console.log('attempting reconnect');
+        periph.connect(function(error) {
+          wand.init(periph)
+          .then(()=> {
+              wand.vibrate(1);
+          });
+      });
+      } else {
+        console.log('do not attempt reset, wand never connected');
+      }
+
+    }
+  }
+});
+
+emitKeypressEvents(process.stdin);
 
 process.stdin.on('keypress', (ch, key) => {
   if (key && key.ctrl && key.name === 'c') {
