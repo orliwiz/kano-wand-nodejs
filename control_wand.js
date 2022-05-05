@@ -7,9 +7,6 @@ import { connect } from 'mqtt';
 import config from './config.js'
 // import pkg from '@harmonyhub/discover';
 // const { Explorer, HubData } = pkg; // read this later https://simonplend.com/node-js-now-supports-named-imports-from-commonjs-modules-but-what-does-that-mean/
-// import Gpio from 'onoff';
-
-// const button = new Gpio(2, 'in', 'rising', {debounceTimeout: 10}); // no resistor this has to be input only or boom(ish)!!!
 
 let wand = new KanoWand();
 let periph;
@@ -21,7 +18,7 @@ let client = connect({
 });
 
 function connectWand(p) {
-  console.log('attempting connect');
+  console.log('connectWand function has run');
   p.connect((err) => {
     if (err) {
       console.error(`exec error: ${err}, if already connected wand will vibrate and not attempt reconnect`);
@@ -32,6 +29,7 @@ function connectWand(p) {
     wand.init(p)
     .then(()=> {
         wand.vibrate(1);
+        console.log('ack_reset message sent');
         client.publish('ack_reset', 'reset');
     });
 });
@@ -50,6 +48,7 @@ client.on('message', (topic, message) => {
   if (topic === 'wand') {
     if (message.toString() === 'reset') {
       if (periph) {
+        console.log('attempting to connect to wand from mqtt message');
         connectWand(periph);
       } else {
         console.log('do not attempt reset, wand never connected');
@@ -74,6 +73,7 @@ process.stdin.on('keypress', (ch, key) => {
     }
   } else if (key && key.name === 'r') {
     if (periph) {
+      console.log('attempting to connect to wand from pressing r');
       connectWand(periph);
     } else {
       console.log('do not attempt reset, wand never connected');
@@ -112,6 +112,7 @@ await  noble.on('discover', function(peripheral) {
       if (deviceName.startsWith("Kano-Wand")) {
         noble.stopScanningAsync();
         noble.reset();
+        console.log('attempting initial connect wand');
         connectWand(peripheral);
         periph = peripheral;
       }
@@ -136,30 +137,4 @@ wand.spells.subscribe((spell) => {
 //     (err) => console.error(err)
 // );
 
-//if button is pressed, wait and restart process
-// button.watch((err, value) => {
-//   if (err) {
-//     throw err;
-//   }
-//   console.log(`button was pressed! value is ${value}, current process id is ${process.pid}`);
-//   setTimeout(function () {
-//     process.on("exit", function () {
-//         require("child_process").spawn(process.argv.shift(), process.argv, {
-//             cwd: process.cwd(),
-//             detached : true,
-//             stdio: "inherit"
-//         });
-//     });
-//     button.unexport();
-//     process.exit();
-// }, 5000);
-// });
-
 process.stdin.setRawMode(true);
-
-// process.on('SIGINT', () => {
-//   // ctrl-c catches sigint process everytime until i restart app with the button, after that ctrl-c doesn't exit the process
-//   console.log('sigint process caught');
-
-//   process.exit();
-// });
